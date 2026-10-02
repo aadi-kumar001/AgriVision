@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>AgriVision — Field Intelligence Console</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌾</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- ============================= SIDEBAR ============================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C12 2 6 7 6 13a6 6 0 0012 0c0-6-6-11-6-11z" stroke="#2F5233" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M12 22V13" stroke="#2F5233" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span class="brand-name">AgriVision</span>
+      </div>
+      <div class="brand-sub">FIELD INTELLIGENCE CONSOLE — REV. 01</div>
+    </div>
+
+    <ul class="nav-index" id="navList">
+      <li><button class="nav-item active" data-view="dashboard"><span class="num">00</span> Dashboard</button></li>
+      <li><button class="nav-item" data-view="disease"><span class="num">01</span> Disease Detection</button></li>
+      <li><button class="nav-item" data-view="yield"><span class="num">02</span> Yield Prediction</button></li>
+      <li><button class="nav-item" data-view="soil"><span class="num">03</span> Soil Health</button></li>
+      <li><button class="nav-item" data-view="irrigation"><span class="num">04</span> Irrigation Advisory</button></li>
+      <li><button class="nav-item" data-view="market"><span class="num">05</span> Market Insights</button></li>
+      <li><button class="nav-item" data-view="history"><span class="num">06</span> Analysis Log</button></li>
+    </ul>
+
+    <div class="sidebar-foot">
+      <span id="apiDot" class="api-dot"></span><span id="apiStatusText">Checking API…</span>
+      <div id="apiUrlNote" style="margin-top:6px;"></div>
+    </div>
+  </aside>
+
+  <!-- ============================== MAIN =============================== -->
+  <main class="main">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section class="view active" id="view-dashboard">
+      <div class="view-head">
+        <div>
+          <h1>Field overview</h1>
+          <p>A working console for early disease detection, yield forecasting and resource planning — built for the AgriTech track on food security, productivity and sustainable farming.</p>
+        </div>
+        <span class="plot-tag">PLOT 00 · SUMMARY</span>
+      </div>
+
+      <div class="hero">
+        <div>
+          <h2>Six field tools, one console.</h2>
+          <p>AgriVision pairs a trained image classifier, an agronomic yield model, a soil-health scoring engine, an irrigation water budget and a market-price tracker behind one API — so a farm advisory team can move from photo to prescription in seconds.</p>
+          <div class="chip-row">
+            <span class="chip" onclick="AgriVision.goTo('disease')">Scan a leaf →</span>
+            <span class="chip" onclick="AgriVision.goTo('yield')">Forecast yield →</span>
+            <span class="chip" onclick="AgriVision.goTo('irrigation')">Plan irrigation →</span>
+          </div>
+        </div>
+        <svg class="furrow-art" viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <rect width="320" height="160" fill="none"/>
+          <g stroke="#2F5233" stroke-width="1.1" fill="none" opacity="0.55">
+            <path d="M0 20 Q80 5 160 20 T320 20"/>
+            <path d="M0 44 Q80 29 160 44 T320 44"/>
+            <path d="M0 68 Q80 53 160 68 T320 68"/>
+            <path d="M0 92 Q80 77 160 92 T320 92"/>
+            <path d="M0 116 Q80 101 160 116 T320 116"/>
+            <path d="M0 140 Q80 125 160 140 T320 140"/>
+          </g>
+          <g fill="#C07F2E" opacity="0.85">
+            <circle cx="46" cy="20" r="3"/>
+            <circle cx="132" cy="44" r="3"/>
+            <circle cx="220" cy="68" r="3"/>
+            <circle cx="94" cy="92" r="3"/>
+            <circle cx="260" cy="116" r="3"/>
+            <circle cx="60" cy="140" r="3"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="grid cols-4" id="statTiles">
+        <div class="stat"><div class="stat-label">TOTAL ANALYSES</div><div class="stat-value" id="statTotal">—</div><div class="stat-foot">logged this session</div></div>
+        <div class="stat"><div class="stat-label">DISEASE ALERTS</div><div class="stat-value danger" id="statAlerts">—</div><div class="stat-foot">non-healthy scans</div></div>
+        <div class="stat"><div class="stat-label">YIELD RUNS</div><div class="stat-value amber" id="statYield">—</div><div class="stat-foot">forecasts generated</div></div>
+        <div class="stat"><div class="stat-label">SUPPORTED CROPS</div><div class="stat-value sky" id="statCrops">6</div><div class="stat-foot">rice · wheat · maize +3</div></div>
+      </div>
+
+      <div class="panel" style="margin-top:18px;">
+        <div class="panel-title">RECENT ACTIVITY <button class="btn secondary" style="padding:5px 11px;font-size:12px;" onclick="AgriVision.goTo('history')">View full log →</button></div>
+        <div id="dashRecent"><div class="result-empty">No activity yet — run a module to populate this log.</div></div>
+      </div>
+    </section>
+
+    <!-- ---------- DISEASE DETECTION ---------- -->
+    <section class="view" id="view-disease">
+      <div class="view-head">
+        <div>
+          <h1>Disease detection</h1>
+          <p>Upload a leaf photo. A trained image classifier flags common stress patterns and returns a field advisory.</p>
+        </div>
+        <span class="plot-tag">PLOT 01 · VISION</span>
+      </div>
+
+      <div class="two-col-layout">
+        <div class="panel">
+          <div class="panel-title">UPLOAD LEAF IMAGE</div>
+          <div class="dropzone" id="diseaseDropzone">
+            <div id="dzContent">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style="margin:0 auto;display:block;"><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              <div class="dz-title">Drop an image, or click to browse</div>
+              <div class="dz-sub">JPG or PNG · a single leaf, filling most of the frame, works best</div>
+            </div>
+          </div>
+          <input type="file" id="diseaseFileInput" accept="image/*" style="display:none" />
+          <div style="margin-top:14px; display:flex; gap:10px;">
+            <button class="btn" id="diseaseSubmit" disabled>Analyze leaf</button>
+            <button class="btn secondary" id="diseaseReset">Clear</button>
+          </div>
+          <div class="small-note">Model: RandomForest classifier over HSV color/texture features — a lightweight, fully-offline demo model, not a deep CNN.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">DIAGNOSIS</div>
+          <div id="diseaseResult"><div class="result-empty">Upload a leaf photo to see a diagnosis here.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- YIELD PREDICTION ---------- -->
+    <section class="view" id="view-yield">
+      <div class="view-head">
+        <div>
+          <h1>Yield prediction</h1>
+          <p>Estimate expected yield from crop, climate, soil and input variables using a model trained on agronomic response curves.</p>
+        </div>
+        <span class="plot-tag">PLOT 02 · FORECAST</span>
+      </div>
+
+      <div class="two-col-layout">
+        <form class="panel" id="yieldForm">
+          <div class="panel-title">SEASON PARAMETERS</div>
+          <div class="grid cols-2">
+            <div class="field">
+              <label for="y_crop">Crop</label>
+              <select id="y_crop" name="crop">
+                <option value="rice">Rice</option>
+                <option value="wheat">Wheat</option>
+                <option value="maize">Maize</option>
+                <option value="cotton">Cotton</option>
+                <option value="sugarcane">Sugarcane</option>
+                <option value="soybean">Soybean</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="y_area">Area (hectares)</label>
+              <input type="number" id="y_area" value="2" min="0.1" step="0.1" required />
+            </div>
+            <div class="field">
+              <label for="y_temp">Avg. season temperature (°C)</label>
+              <input type="number" id="y_temp" value="26" step="0.1" required />
+            </div>
+            <div class="field">
+              <label for="y_rain">Seasonal rainfall (mm)</label>
+              <input type="number" id="y_rain" value="900" step="1" required />
+            </div>
+            <div class="field">
+              <label for="y_ph">Soil pH</label>
+              <input type="number" id="y_ph" value="6.4" min="3" max="10" step="0.1" required />
+            </div>
+            <div class="field">
+              <label for="y_fert">Fertilizer (kg/ha)</label>
+              <input type="number" id="y_fert" value="70" step="1" required />
+            </div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="y_irrigation">Irrigation type</label>
+              <select id="y_irrigation">
+                <option value="drip">Drip</option>
+                <option value="sprinkler">Sprinkler</option>
+                <option value="canal" selected>Canal</option>
+                <option value="rainfed">Rainfed</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn" type="submit">Predict yield</button>
+        </form>
+
+        <div class="panel">
+          <div class="panel-title">FORECAST</div>
+          <div id="yieldResult"><div class="result-empty">Fill in the season parameters to generate a forecast.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- SOIL HEALTH ---------- -->
+    <section class="view" id="view-soil">
+      <div class="view-head">
+        <div>
+          <h1>Soil health</h1>
+          <p>Score N-P-K, pH and organic carbon against standard agronomic bands and get a corrective fertilizer plan.</p>
+        </div>
+        <span class="plot-tag">PLOT 03 · SOIL</span>
+      </div>
+
+      <div class="two-col-layout">
+        <form class="panel" id="soilForm">
+          <div class="panel-title">SOIL TEST VALUES</div>
+          <div class="grid cols-2">
+            <div class="field">
+              <label for="s_n">Nitrogen — N (mg/kg)</label>
+              <input type="number" id="s_n" value="260" step="1" required />
+            </div>
+            <div class="field">
+              <label for="s_p">Phosphorus — P (mg/kg)</label>
+              <input type="number" id="s_p" value="14" step="0.5" required />
+            </div>
+            <div class="field">
+              <label for="s_k">Potassium — K (mg/kg)</label>
+              <input type="number" id="s_k" value="170" step="1" required />
+            </div>
+            <div class="field">
+              <label for="s_ph">pH</label>
+              <input type="number" id="s_ph" value="6.5" min="3" max="10" step="0.1" required />
+            </div>
+            <div class="field">
+              <label for="s_oc">Organic carbon (%)</label>
+              <input type="number" id="s_oc" value="0.6" min="0" step="0.05" required />
+            </div>
+            <div class="field">
+              <label for="s_crop">Target crop</label>
+              <select id="s_crop">
+                <option value="rice">Rice</option>
+                <option value="wheat" selected>Wheat</option>
+                <option value="maize">Maize</option>
+                <option value="cotton">Cotton</option>
+                <option value="sugarcane">Sugarcane</option>
+                <option value="soybean">Soybean</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn" type="submit">Score soil health</button>
+        </form>
+
+        <div class="panel">
+          <div class="panel-title">HEALTH REPORT</div>
+          <div id="soilResult"><div class="result-empty">Enter soil-test values to see a health score and recommendations.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- IRRIGATION ---------- -->
+    <section class="view" id="view-irrigation">
+      <div class="view-head">
+        <div>
+          <h1>Irrigation advisory</h1>
+          <p>A simplified reference-evapotranspiration water budget converts field conditions into a watering recommendation.</p>
+        </div>
+        <span class="plot-tag">PLOT 04 · WATER</span>
+      </div>
+
+      <div class="two-col-layout">
+        <form class="panel" id="irrForm">
+          <div class="panel-title">FIELD CONDITIONS</div>
+          <div class="grid cols-2">
+            <div class="field">
+              <label for="i_moisture">Soil moisture (%)</label>
+              <input type="number" id="i_moisture" value="42" min="0" max="100" step="1" required />
+            </div>
+            <div class="field">
+              <label for="i_temp">Temperature (°C)</label>
+              <input type="number" id="i_temp" value="31" step="0.5" required />
+            </div>
+            <div class="field">
+              <label for="i_humidity">Relative humidity (%)</label>
+              <input type="number" id="i_humidity" value="55" min="0" max="100" step="1" required />
+            </div>
+            <div class="field">
+              <label for="i_crop">Crop</label>
+              <select id="i_crop">
+                <option value="rice">Rice</option>
+                <option value="wheat">Wheat</option>
+                <option value="maize" selected>Maize</option>
+                <option value="cotton">Cotton</option>
+                <option value="sugarcane">Sugarcane</option>
+                <option value="soybean">Soybean</option>
+              </select>
+            </div>
+            <div class="field" style="grid-column: 1 / -1;">
+              <label for="i_stage">Growth stage</label>
+              <select id="i_stage">
+                <option value="seedling">Seedling</option>
+                <option value="vegetative" selected>Vegetative</option>
+                <option value="flowering">Flowering</option>
+                <option value="maturity">Maturity</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn" type="submit">Get advisory</button>
+        </form>
+
+        <div class="panel">
+          <div class="panel-title">WATER BUDGET</div>
+          <div id="irrResult"><div class="result-empty">Enter field conditions to see today's irrigation recommendation.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- MARKET ---------- -->
+    <section class="view" id="view-market">
+      <div class="view-head">
+        <div>
+          <h1>Market insights</h1>
+          <p>Track a 30-day mandi price trend and compare nearby markets to time a sale and reduce post-harvest loss.</p>
+        </div>
+        <span class="plot-tag">PLOT 05 · SUPPLY CHAIN</span>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">
+          <span>CROP</span>
+          <select id="m_crop" style="width:auto; padding:6px 10px; border:1px solid var(--line-strong); border-radius:3px; font-family:var(--font-body);">
+            <option value="rice">Rice</option>
+            <option value="wheat">Wheat</option>
+            <option value="maize">Maize</option>
+            <option value="cotton">Cotton</option>
+            <option value="sugarcane">Sugarcane</option>
+            <option value="soybean">Soybean</option>
+          </select>
+        </div>
+        <div id="marketResult"><div class="result-empty">Loading market data…</div></div>
+      </div>
+    </section>
+
+    <!-- ---------- HISTORY ---------- -->
+    <section class="view" id="view-history">
+      <div class="view-head">
+        <div>
+          <h1>Analysis log</h1>
+          <p>Every scan, forecast and score run in this session, most recent first.</p>
+        </div>
+        <span class="plot-tag">PLOT 06 · LOG</span>
+      </div>
+      <div class="panel">
+        <div class="panel-title">
+          <span>ALL MODULES</span>
+          <button class="btn secondary" style="padding:5px 11px;font-size:12px;" onclick="AgriVision.loadHistory()">Refresh</button>
+        </div>
+        <div id="historyResult"><div class="result-empty">No analyses logged yet.</div></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<div id="toastHost"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
